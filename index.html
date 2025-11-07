@@ -1,8 +1,47 @@
-<script>
-        // إعداد مشغل HLS.js
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dani TV - البث المباشر</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <img src="logo.png" alt="Dani TV Logo" class="logo">
+        <h1>Dani TV</h1>
+    </header>
+
+    <div class="container">
+        
+        <div class="player-container">
+            <h2 id="channel-title">اختر قناة من القائمة لتبدأ</h2>
+            <video id="videoPlayer" controls autoplay muted></video>
+        </div>
+
+        <div class="channel-list-container">
+            <h2>📺 قائمة القنوات</h2>
+            <input type="text" id="search-bar" onkeyup="filterChannels()" placeholder="ابحث عن قناة...">
+            <ul id="channel-list">
+                <li class="loading">جاري تحميل قائمة القنوات...</li>
+            </ul>
+        </div>
+        
+    </div>
+
+    <script>
         const video = document.getElementById('videoPlayer');
         let hls; 
 
+        // التحقق من أن المكتبة تم تحميلها قبل أي شيء
         if (Hls.isSupported()) {
             hls = new Hls();
             hls.attachMedia(video);
@@ -14,11 +53,9 @@
         function playChannel(name, url, clickedElement) {
             document.getElementById('channel-title').innerText = `أنت تشاهد الآن: ${name}`;
             
-            // إزالة التمييز (class 'active') من جميع القنوات
             const allChannels = document.querySelectorAll('#channel-list li');
             allChannels.forEach(item => item.classList.remove('active'));
             
-            // إضافة التمييز (class 'active') للقناة التي تم النقر عليها
             if (clickedElement) {
                 clickedElement.classList.add('active');
             }
@@ -44,9 +81,8 @@
         // وظيفة لتحليل ملف m3u
         async function parseM3U(fileUrl) {
             try {
-                // التأكد من أن المتصفح يطلب الملف بالتشفير الصحيح
-                const response = await fetch(encodeURI(fileUrl)); 
-                if (!response.ok) { 
+                const response = await fetch(fileUrl); 
+                if (!response.ok) { // التحقق إذا كان الملف موجوداً (ليس 404)
                     throw new Error('فشل تحميل الملف - 404');
                 }
                 const text = await response.text();
@@ -83,4 +119,38 @@
             const li = ul.getElementsByTagName('li');
 
             for (let i = 0; i < li.length; i++) {
-                const txtValue = li[i].textContent || li
+                const txtValue = li[i].textContent || li[i].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    li[i].style.display = "";
+                } else {
+                    li[i].style.display = "none";
+                }
+            }
+        }
+
+        // عند تحميل الصفحة، ابدأ بكل شيء
+        document.addEventListener('DOMContentLoaded', async () => {
+            const channelListElement = document.getElementById('channel-list');
+            
+            // *** ⭐️ هذا هو السطر الذي تم إصلاحه ⭐️ ***
+            // الكود الآن يبحث عن الاسم الإنجليزي "channels.m3u"
+            const channels = await parseM3U('channels.m3u'); 
+
+            if (channels.length > 0) {
+                channelListElement.innerHTML = ''; 
+                
+                channels.forEach(channel => {
+                    const li = document.createElement('li');
+                    li.innerText = channel.name;
+                    li.onclick = () => playChannel(channel.name, channel.url, li);
+                    channelListElement.appendChild(li);
+                });
+            } else {
+                // رسالة خطأ أوضح
+                channelListElement.innerHTML = '<li class="loading error">فشل تحميل القنوات. تأكد من وجود ملف "channels.m3u" في المستودع.</li>';
+            }
+        });
+    </script>
+
+</body>
+</html>
