@@ -8,9 +8,13 @@
     --text-color: #333333;     
     --card-background: #FFFFFF;  
     --white-text: #FFFFFF;
+    
+    /* 3. (جديد) تطبيق لون الهوية على مشغل Plyr */
+    /* هذا الكود البرمجي المتقدم يغير لون المشغل الافتراضي */
+    --plyr-color-main: var(--primary-color);
 }
 
-/* 3. تعريف "الحركة" (Animations) */
+/* 4. تعريف "الحركة" (Animations) */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -31,7 +35,7 @@ body {
     animation: fadeIn 0.5s ease-in-out;
 }
 
-/* 4. تنسيق الهيدر (رأس الصفحة) */
+/* 5. تنسيق الهيدر (رأس الصفحة) */
 header {
     padding: 20px 5%;
     background-color: var(--card-background);
@@ -56,19 +60,19 @@ h1 {
     font-weight: 700;
 }
 
-/* 5. التقسيم الثلاثي (لابتوب) */
+/* 6. التقسيم الثلاثي (لابتوب) */
 .container {
     display: flex;
-    flex-wrap: nowrap; /* منع الأعمدة من النزول تحت بعضها */
-    max-width: 1400px; /* زيادة العرض الأقصى */
+    flex-wrap: nowrap; 
+    max-width: 1400px; 
     margin: 0 auto;
     padding: 0 20px;
     gap: 20px; 
 }
 
-/* 6. حاوية المشغل (القسم الأيسر) */
+/* 7. حاوية المشغل (القسم الأيسر) */
 .player-container {
-    flex: 3; /* 3 أجزاء (الأكبر) */
+    flex: 3; 
     min-width: 300px; 
     padding: 20px;
     background-color: var(--card-background);
@@ -88,33 +92,36 @@ h1 {
     animation: pulseLive 2.5s infinite ease-in-out;
 }
 
-video {
-    width: 100%;
-    height: auto;
+/* 8. (مهم) تنسيق حاوية المشغل Plyr */
+/* يجب أن يكون الفيديو داخل الحاوية أسود اللون */
+#videoPlayer {
     background-color: #000;
     border-radius: 5px;
+    /* التأكد من أن المشغل يأخذ الحجم الصحيح */
+    width: 100%;
+    height: auto;
 }
 
-/* 7. حاويات القوائم (التصنيفات والقنوات) */
+/* 9. حاويات القوائم (التصنيفات والقنوات) */
 .list-container {
     background-color: var(--card-background);
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     padding: 20px;
-    max-height: 80vh; /* ارتفاع موحد */
+    max-height: 80vh; 
     display: flex;
     flex-direction: column; 
 }
 
-/* 8. حاوية التصنيفات (العمود الأيمن) */
+/* 10. حاوية التصنيفات (العمود الأيمن) */
 #category-container {
-    flex: 1; /* جزء واحد */
+    flex: 1; 
     min-width: 200px;
 }
 
-/* 9. حاوية القنوات (العمود الأوسط) */
+/* 11. حاوية القنوات (العمود الأوسط) */
 #channel-list-container {
-    flex: 1.5; /* جزء ونصف */
+    flex: 1.5; 
     min-width: 250px;
 }
 
@@ -127,7 +134,7 @@ video {
     text-overflow: ellipsis;
 }
 
-/* 10. شريط البحث */
+/* 12. شريط البحث */
 #search-bar {
     width: 95%;
     padding: 10px;
@@ -145,7 +152,7 @@ video {
     outline: none;
 }
 
-/* 11. تصميم القوائم (مشترك للتصنيفات والقنوات) */
+/* 13. تصميم القوائم (مشترك للتصنيفات والقنوات) */
 #category-list, #channel-list {
     list-style: none;
     padding: 0;
@@ -164,7 +171,7 @@ video {
     white-space: nowrap;
 }
 
-/* 12. تأثير تمرير الماوس (Hover) */
+/* 14. تأثير تمرير الماوس (Hover) */
 #category-list li:hover, #channel-list li:hover {
     background-color: var(--primary-color);
     color: var(--white-text); 
@@ -173,7 +180,7 @@ video {
     border-bottom-color: var(--primary-color); 
 }
 
-/* 13. تصميم العنصر "الفعال" (Active) */
+/* 15. تصميم العنصر "الفعال" (Active) */
 #category-list li.active, #channel-list li.active {
     background-color: var(--primary-color);
     color: var(--white-text);
@@ -191,7 +198,7 @@ video {
     font-weight: bold;
 }
 
-/* 14. تصميم شريط التمرير */
+/* 16. تصميم شريط التمرير */
 #category-list::-webkit-scrollbar, #channel-list::-webkit-scrollbar {
     width: 8px; 
 }
@@ -204,19 +211,17 @@ video {
     border-radius: 10px;
 }
 
-/* 15. كود التجاوب (Media Query) للموبايل */
-@media (max-width: 900px) { /* زيادة نقطة التجاوب */
+/* 17. كود التجاوب (Media Query) للموبايل */
+@media (max-width: 900px) { 
     .container {
-        flex-direction: column; /* جعل الأعمدة فوق بعضها */
+        flex-direction: column; 
         gap: 20px;
     }
     
     .list-container {
-        max-height: 40vh; /* تحديد ارتفاع القوائم على الموبايل */
+        max-height: 40vh; 
     }
 
-    /* تغيير ترتيب ظهور العناصر على الموبايل */
-    /* هذا الكود البرمجي المتقدم يضع المشغل في الأسفل */
     .player-container {
         order: 3;
     }

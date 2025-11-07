@@ -6,10 +6,17 @@
     <title>Dani TV - البث المباشر</title>
     
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+
 </head>
 <body>
 
@@ -37,7 +44,8 @@
         
         <div class="player-container">
             <h2 id="channel-title">اختر قناة لتبدأ</h2>
-            <video id="videoPlayer" controls autoplay muted></video>
+            
+            <video id="videoPlayer" autoplay muted></video>
         </div>
         
     </div>
@@ -45,9 +53,17 @@
     <script>
         const video = document.getElementById('videoPlayer');
         let hls; 
-        let categoriesData = {}; // سيخزن كل القنوات مصنفة
-        let activeCategoryElement = null; // لتتبع التصنيف النشط
-        let activeChannelElement = null; // لتتبع القناة النشطة
+        let categoriesData = {}; 
+        let activeCategoryElement = null; 
+        let activeChannelElement = null; 
+        
+        // 8. (جديد) تفعيل مشغل Plyr.io
+        // هذا السطر يحول الفيديو العادي إلى مشغل احترافي
+        const player = new Plyr(video, {
+            captions: { active: false, language: 'auto', update: false },
+            autoplay: true,
+            muted: true,
+        });
 
         if (Hls.isSupported()) {
             hls = new Hls();
@@ -56,34 +72,28 @@
             console.warn("HLS.js غير مدعوم.");
         }
 
-        // وظيفة لتشغيل قناة معينة
         function playChannel(name, url, clickedElement) {
             document.getElementById('channel-title').innerText = `أنت تشاهد الآن: ${name}`;
             
-            // إزالة التمييز من القناة القديمة (إن وجدت)
             if (activeChannelElement) {
                 activeChannelElement.classList.remove('active');
             }
-            // تمييز القناة الجديدة
             clickedElement.classList.add('active');
             activeChannelElement = clickedElement;
 
-            // تشغيل البث
             if (Hls.isSupported() && hls) {
                 hls.loadSource(url);
-                hls.on(Hls.Events.MEDIA_ATTACHED, () => video.play());
+                hls.on(Hls.Events.MEDIA_ATTACHED, () => player.play()); // استخدم .play() من Plyr
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
-                video.addEventListener('loadedmetadata', () => video.play());
+                video.addEventListener('loadedmetadata', () => player.play()); // استخدم .play() من Plyr
             }
             
-            // للموبايل: تمرير الشاشة للمشغل
             if (window.innerWidth < 768) {
                 document.getElementById('player-container').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
-        // وظيفة لتحليل ملف m3u
         async function parseM3U(fileUrl) {
             try {
                 const response = await fetch(fileUrl); 
@@ -91,47 +101,33 @@
                 
                 const text = await response.text();
                 const lines = text.split('\n');
-                const categories = { "متفرقات": [] }; // تصنيف افتراضي
+                const categories = { "متفرقات": [] }; 
                 let currentTitle = null;
-                let currentGroup = "متفرقات"; // الافتراضي
+                let currentGroup = "متفرقات"; 
 
                 for (const line of lines) {
                     if (line.startsWith('#EXTINF:')) {
-                        // استخراج اسم المجموعة
                         const groupMatch = line.match(/group-title="([^"]+)"/);
-                        if (groupMatch && groupMatch[1]) {
-                            currentGroup = groupMatch[1].trim();
-                        } else {
-                            currentGroup = "متفرقات"; // العودة للافتراضي
-                        }
+                        currentGroup = (groupMatch && groupMatch[1]) ? groupMatch[1].trim() : "متفرقات";
 
-                        // استخراج اسم القناة
                         const nameMatch = line.match(/tvg-name="([^"]+)"/);
-                        if (nameMatch && nameMatch[1]) {
-                            currentTitle = nameMatch[1].trim();
-                        } else {
-                            currentTitle = line.split(',').pop().trim();
-                        }
+                        currentTitle = (nameMatch && nameMatch[1]) ? nameMatch[1].trim() : line.split(',').pop().trim();
 
-                        // التأكد من إنشاء التصنيف إذا لم يكن موجوداً
                         if (!categories[currentGroup]) {
                             categories[currentGroup] = [];
                         }
-
                     } else if (line.startsWith('http') && currentTitle) {
-                        // إضافة القناة للتصنيف الصحيح
                         categories[currentGroup].push({ name: currentTitle, url: line.trim() });
-                        currentTitle = null; // إعادة التعيين
+                        currentTitle = null; 
                     }
                 }
                 return categories;
             } catch (error) {
                 console.error('خطأ في جلب ملف القنوات:', error);
-                return { "خطأ": [] }; // إرجاع تصنيف خطأ
+                return { "خطأ": [] }; 
             }
         }
 
-        // وظيفة لفلترة (بحث) القنوات
         function filterChannels() {
             const input = document.getElementById('search-bar');
             const filter = input.value.toUpperCase(); 
@@ -147,21 +143,18 @@
             }
         }
 
-        // (جديدة) وظيفة لعرض القنوات عند اختيار تصنيف
         function displayChannels(categoryName, clickedElement) {
             const channelList = document.getElementById('channel-list');
             const channels = categoriesData[categoryName] || [];
-            channelList.innerHTML = ''; // إفراغ القائمة
+            channelList.innerHTML = ''; 
             document.getElementById('channel-list-title').innerText = categoryName;
 
-            // تمييز التصنيف النشط
             if (activeCategoryElement) {
                 activeCategoryElement.classList.remove('active');
             }
             clickedElement.classList.add('active');
             activeCategoryElement = clickedElement;
 
-            // إزالة تمييز القناة النشطة السابقة
             if (activeChannelElement) {
                 activeChannelElement.classList.remove('active');
                 activeChannelElement = null;
@@ -179,16 +172,16 @@
             }
         }
 
-        // عند تحميل الصفحة، ابدأ بكل شيء
         document.addEventListener('DOMContentLoaded', async () => {
             const categoryList = document.getElementById('category-list');
             
+            // التأكد من أننا نبحث عن الاسم الإنجليزي الصحيح للملف
             categoriesData = await parseM3U('channels.m3u'); 
             
             const categoryNames = Object.keys(categoriesData);
 
             if (categoryNames.length > 0 && categoryNames[0] !== "خطأ") {
-                categoryList.innerHTML = ''; // إفراغ "جاري التحميل"
+                categoryList.innerHTML = ''; 
                 
                 categoryNames.forEach(name => {
                     const li = document.createElement('li');
@@ -197,11 +190,9 @@
                     categoryList.appendChild(li);
                 });
                 
-                // (اختياري) تشغيل أول تصنيف تلقائياً
                 if(categoryList.firstChild){
                     categoryList.firstChild.click();
                 }
-
             } else {
                 categoryList.innerHTML = '<li class="loading error">فشل تحميل التصنيفات.</li>';
                 document.getElementById('channel-list').innerHTML = '<li class="loading error">تأكد من وجود ملف "channels.m3u"</li>';
