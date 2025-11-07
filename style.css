@@ -1,7 +1,7 @@
 /* 1. جلب خط "القاهرة" */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
 
-/* 2. 🎨 الهوية البصرية لمشروع Dani TV (نسخة محسّنة) 🎨 */
+/* 2. 🎨 الهوية البصرية لمشروع Dani TV 🎨 */
 :root {
     --primary-color: #E57373;   
     --background-color: #E0E0E0; 
@@ -123,12 +123,11 @@ video {
     border-radius: 5px;
     font-family: 'Cairo', sans-serif; 
     align-self: center;
-    transition: all 0.3s ease; /* تأثير ناعم للظل والبوردر */
+    transition: all 0.3s ease; 
 }
 
 #search-bar:focus {
     border-color: var(--primary-color);
-    /* إضافة ظل ناعم بلون الهوية عند التركيز */
     box-shadow: 0 0 10px rgba(229, 115, 115, 0.5); 
     outline: none;
 }
@@ -138,13 +137,11 @@ video {
     list-style: none;
     padding: 0;
     margin: 0;
-    overflow-y: auto; /* تفعيل التمرير */
+    overflow-y: auto; 
 }
 
 #channel-list li {
     padding: 12px 15px;
-    /* *** هذا هو الفاصل الجديد *** */
-    /* أصبح الفاصل الآن بلون الخلفية وأكثر سماكة */
     border-bottom: 2px solid var(--background-color); 
     cursor: pointer; 
     font-size: 0.9em;
@@ -163,32 +160,32 @@ video {
     border-bottom-color: var(--primary-color); 
 }
 
-/* 11. *** هذا هو التصميم الجديد للقناة "الفعالة" *** */
+/* 11. تصميم القناة "الفعالة" */
 #channel-list li.active {
     background-color: var(--primary-color);
     color: var(--white-text);
-    font-weight: 700; /* جعل الخط عريضاً */
+    font-weight: 700; 
     border-bottom-color: var(--primary-color);
 }
 
-/* 12. *** تصميم شريط التمرير الجديد *** */
+/* 12. تصميم شريط التمرير الجديد */
 #channel-list::-webkit-scrollbar {
-    width: 8px; /* عرض الشريط */
+    width: 8px; 
 }
 #channel-list::-webkit-scrollbar-track {
-    background: var(--background-color); /* لون المسار */
+    background: var(--background-color); 
     border-radius: 10px;
 }
 #channel-list::-webkit-scrollbar-thumb {
-    background: #ccc; /* لون المقبض */
+    background: #ccc; 
     border-radius: 10px;
 }
 #channel-list::-webkit-scrollbar-thumb:hover {
-    background: #bbb; /* لون المقبض عند التمرير */
+    background: #bbb; 
 }
 
 
-/* 13. كود التجاوب (Media Query) (كما هو) */
+/* 13. كود التجاوب (Media Query) */
 @media (max-width: 768px) {
     .container {
         flex-direction: column-reverse; 

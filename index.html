@@ -1,33 +1,87 @@
-<script>
-        // إعداد مشغل HLS.js
-        const video = document.getElementById('videoPlayer');
-        const hls = new Hls();
-        hls.attachMedia(video);
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dani TV - البث المباشر</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
 
-        // *** تم تحديث هذه الوظيفة ***
-        // أضفنا "clickedElement" لتتبع القناة النشطة
+    <header>
+        <img src="logo.png" alt="Dani TV Logo" class="logo">
+        <h1>Dani TV</h1>
+    </header>
+
+    <div class="container">
+        
+        <div class="player-container">
+            <h2 id="channel-title">اختر قناة من القائمة لتبدأ</h2>
+            <video id="videoPlayer" controls autoplay muted></video>
+        </div>
+
+        <div class="channel-list-container">
+            <h2>📺 قائمة القنوات</h2>
+            <input type="text" id="search-bar" onkeyup="filterChannels()" placeholder="ابحث عن قناة...">
+            <ul id="channel-list">
+                <li class="loading">جاري تحميل قائمة القنوات...</li>
+            </ul>
+        </div>
+        
+    </div>
+
+    <script>
+        const video = document.getElementById('videoPlayer');
+        let hls; // سنقوم بإنشائه لاحقاً
+
+        // *** هذا هو التصحيح: ***
+        // لقد أضفنا التحقق من "Hls.isSupported()" مرة أخرى
+        // لن نقوم بتشغيل أي كود HLS إلا إذا تم تحميل المكتبة بنجاح
+        if (Hls.isSupported()) {
+            hls = new Hls();
+            hls.attachMedia(video);
+        } else {
+            console.warn("HLS.js غير مدعوم أو فشل في التحميل. سنعتمد على المتصفح.");
+        }
+
+        // وظيفة لتشغيل قناة معينة
         function playChannel(name, url, clickedElement) {
             document.getElementById('channel-title').innerText = `أنت تشاهد الآن: ${name}`;
             
-            // --- كود جديد لتمييز القناة الفعالة ---
-            // 1. إزالة التمييز (class 'active') من جميع القنوات
+            // إزالة التمييز (class 'active') من جميع القنوات
             const allChannels = document.querySelectorAll('#channel-list li');
-            allChannels.forEach(item => {
-                item.classList.remove('active');
-            });
-            // 2. إضافة التمييز (class 'active') للقناة التي تم النقر عليها
+            allChannels.forEach(item => item.classList.remove('active'));
+            
+            // إضافة التمييز (class 'active') للقناة التي تم النقر عليها
             if (clickedElement) {
                 clickedElement.classList.add('active');
             }
-            // --- نهاية الكود الجديد ---
 
-            // تحميل وتشغيل البث الجديد
-            hls.loadSource(url);
-            hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-                video.play();
-            });
+            // التحقق مرة أخرى قبل التشغيل
+            if (Hls.isSupported() && hls) {
+                // إذا HLS مدعوم، استخدمه
+                hls.loadSource(url);
+                hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+                    video.play();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // إذا لم يكن مدعوم (مثل Safari)، دع المتصفح يحاول
+                video.src = url;
+                video.addEventListener('loadedmetadata', function () {
+                    video.play();
+                });
+            } else {
+                // إذا فشل كل شيء
+                document.getElementById('channel-title').innerText = "خطأ: لا يمكن تشغيل هذا البث";
+            }
             
-            // (للهواتف) تمرير الشاشة للأعلى لرؤية المشغل
             window.scrollTo(0, 0);
         }
 
@@ -35,6 +89,9 @@
         async function parseM3U(fileUrl) {
             try {
                 const response = await fetch(fileUrl);
+                if (!response.ok) { // التحقق إذا كان الملف موجوداً (ليس 404)
+                    throw new Error('فشل تحميل الملف');
+                }
                 const text = await response.text();
                 const lines = text.split('\n');
                 
@@ -89,15 +146,8 @@
                 channels.forEach(channel => {
                     const li = document.createElement('li');
                     li.innerText = channel.name;
-                    
-                    // *** تم تحديث هذا السطر ***
-                    // الآن نرسل "li" (العنصر نفسه) إلى وظيفة التشغيل
                     li.onclick = () => playChannel(channel.name, channel.url, li);
-                    
                     channelListElement.appendChild(li);
                 });
             } else {
-                channelListElement.innerHTML = '<li class="loading error">فشل تحميل قائمة القنوات. تأكد من وجود ملف channels.m3u</li>';
-            }
-        });
-    </script>
+                channelListElement.innerHTML = '<li class="loading error">ف
