@@ -8,13 +8,12 @@
     --text-color: #333333;     
     --card-background: #FFFFFF;  
     --white-text: #FFFFFF;
-    
-    /* 3. (جديد) تطبيق لون الهوية على مشغل Plyr */
-    /* هذا الكود البرمجي المتقدم يغير لون المشغل الافتراضي */
-    --plyr-color-main: var(--primary-color);
+    /* (جديد) لون البطاقة الافتراضي */
+    --list-item-bg: #f9f9f9;
+    --list-item-border: #f0f0f0;
 }
 
-/* 4. تعريف "الحركة" (Animations) */
+/* 3. تعريف "الحركة" (Animations) */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -35,7 +34,7 @@ body {
     animation: fadeIn 0.5s ease-in-out;
 }
 
-/* 5. تنسيق الهيدر (رأس الصفحة) */
+/* 4. تنسيق الهيدر (رأس الصفحة) */
 header {
     padding: 20px 5%;
     background-color: var(--card-background);
@@ -60,7 +59,7 @@ h1 {
     font-weight: 700;
 }
 
-/* 6. التقسيم الثلاثي (لابتوب) */
+/* 5. التقسيم الثلاثي (لابتوب) */
 .container {
     display: flex;
     flex-wrap: nowrap; 
@@ -70,7 +69,7 @@ h1 {
     gap: 20px; 
 }
 
-/* 7. حاوية المشغل (القسم الأيسر) */
+/* 6. حاوية المشغل (القسم الأيسر) */
 .player-container {
     flex: 3; 
     min-width: 300px; 
@@ -92,17 +91,15 @@ h1 {
     animation: pulseLive 2.5s infinite ease-in-out;
 }
 
-/* 8. (مهم) تنسيق حاوية المشغل Plyr */
-/* يجب أن يكون الفيديو داخل الحاوية أسود اللون */
+/* 7. تنسيق حاوية المشغل Plyr */
 #videoPlayer {
     background-color: #000;
     border-radius: 5px;
-    /* التأكد من أن المشغل يأخذ الحجم الصحيح */
     width: 100%;
     height: auto;
 }
 
-/* 9. حاويات القوائم (التصنيفات والقنوات) */
+/* 8. حاويات القوائم (التصنيفات والقنوات) */
 .list-container {
     background-color: var(--card-background);
     border-radius: 8px;
@@ -113,13 +110,13 @@ h1 {
     flex-direction: column; 
 }
 
-/* 10. حاوية التصنيفات (العمود الأيمن) */
+/* 9. حاوية التصنيفات (العمود الأيمن) */
 #category-container {
     flex: 1; 
     min-width: 200px;
 }
 
-/* 11. حاوية القنوات (العمود الأوسط) */
+/* 10. حاوية القنوات (العمود الأوسط) */
 #channel-list-container {
     flex: 1.5; 
     min-width: 250px;
@@ -134,7 +131,7 @@ h1 {
     text-overflow: ellipsis;
 }
 
-/* 12. شريط البحث */
+/* 11. شريط البحث */
 #search-bar {
     width: 95%;
     padding: 10px;
@@ -152,46 +149,81 @@ h1 {
     outline: none;
 }
 
-/* 13. تصميم القوائم (مشترك للتصنيفات والقنوات) */
+/* 12. القوائم (التصنيفات والقنوات) */
 #category-list, #channel-list {
     list-style: none;
     padding: 0;
     margin: 0;
     overflow-y: auto; 
+    /* (جديد) إضافة مساحة بسيطة من الحواف */
+    padding-right: 5px;
 }
+
+
+/* * ============================================
+ * ⭐️ هذا هو التعديل الاحترافي للقائمة ⭐️
+ * ============================================
+*/
 
 #category-list li, #channel-list li {
     padding: 12px 15px;
-    border-bottom: 2px solid var(--background-color); 
+    
+    /* (جديد) الفاصل الواضح بين البطاقات */
+    margin-bottom: 8px; 
+    
+    /* (جديد) خلفية البطاقة وحوافها */
+    background-color: var(--list-item-bg);
+    border: 1px solid var(--list-item-border);
+    border-radius: 6px; /* حواف دائرية */
+    
+    /* (جديد) الظل الخفيف للبروز */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    
     cursor: pointer; 
     font-size: 0.9em;
-    transition: all 0.2s ease; 
+    transition: all 0.2s ease-in-out; 
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-/* 14. تأثير تمرير الماوس (Hover) */
+/* 14. تأثير تمرير الماوس (Hover) الجديد */
 #category-list li:hover, #channel-list li:hover {
-    background-color: var(--primary-color);
-    color: var(--white-text); 
-    transform: scale(1.03); 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    border-bottom-color: var(--primary-color); 
+    /* (جديد) تأثير "الرفع" الاحترافي */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    background-color: var(--card-background); /* جعلها أفتح عند التمرير */
+    border-color: #ddd;
 }
 
-/* 15. تصميم العنصر "الفعال" (Active) */
+/* 15. تصميم العنصر "الفعال" (Active) الجديد */
 #category-list li.active, #channel-list li.active {
     background-color: var(--primary-color);
     color: var(--white-text);
     font-weight: 700; 
-    border-bottom-color: var(--primary-color);
+    border-color: var(--primary-color);
+    /* (جديد) ظل بلون الهوية */
+    box-shadow: 0 2px 5px rgba(229, 115, 115, 0.4);
+    transform: translateY(-1px);
 }
+
+/* (جديد) منع تأثير الهوفر على العنصر النشط */
+#category-list li.active:hover, #channel-list li.active:hover {
+    background-color: var(--primary-color);
+    color: var(--white-text);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(229, 115, 115, 0.4);
+}
+/* ============================================ */
+
 
 .loading {
     text-align: center;
     color: #888;
     cursor: default;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 .loading.error {
     color: red;
@@ -222,15 +254,9 @@ h1 {
         max-height: 40vh; 
     }
 
-    .player-container {
-        order: 3;
-    }
-    #category-container {
-        order: 1;
-    }
-    #channel-list-container {
-        order: 2;
-    }
+    .player-container { order: 3; }
+    #category-container { order: 1; }
+    #channel-list-container { order: 2; }
 
     header {
         width: 90%;
