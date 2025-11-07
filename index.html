@@ -1,52 +1,26 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dani TV - البث المباشر</title>
-    
-    <link rel="stylesheet" href="style.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-
-    <header>
-        <img src="logo.png" alt="Dani TV Logo" class="logo">
-        <h1>Dani TV</h1>
-    </header>
-
-    <div class="container">
-        
-        <div class="player-container">
-            <h2 id="channel-title">اختر قناة من القائمة لتبدأ</h2>
-            <video id="videoPlayer" controls autoplay muted></video>
-            </div>
-
-        <div class="channel-list-container">
-            <h2>📺 قائمة القنوات</h2>
-            <input type="text" id="search-bar" onkeyup="filterChannels()" placeholder="ابحث عن قناة...">
-            <ul id="channel-list">
-                <li class="loading">جاري تحميل قائمة القنوات...</li>
-            </ul>
-        </div>
-        
-    </div>
-
-    <script>
+<script>
         // إعداد مشغل HLS.js
         const video = document.getElementById('videoPlayer');
         const hls = new Hls();
         hls.attachMedia(video);
 
-        // وظيفة لتشغيل قناة معينة
-        function playChannel(name, url) {
+        // *** تم تحديث هذه الوظيفة ***
+        // أضفنا "clickedElement" لتتبع القناة النشطة
+        function playChannel(name, url, clickedElement) {
             document.getElementById('channel-title').innerText = `أنت تشاهد الآن: ${name}`;
             
+            // --- كود جديد لتمييز القناة الفعالة ---
+            // 1. إزالة التمييز (class 'active') من جميع القنوات
+            const allChannels = document.querySelectorAll('#channel-list li');
+            allChannels.forEach(item => {
+                item.classList.remove('active');
+            });
+            // 2. إضافة التمييز (class 'active') للقناة التي تم النقر عليها
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            }
+            // --- نهاية الكود الجديد ---
+
             // تحميل وتشغيل البث الجديد
             hls.loadSource(url);
             hls.on(Hls.Events.MEDIA_ATTACHED, function () {
@@ -69,28 +43,25 @@
 
                 for (const line of lines) {
                     if (line.startsWith('#EXTINF:')) {
-                        // استخراج اسم القناة
                         const nameMatch = line.match(/tvg-name="([^"]+)"/);
                         if (nameMatch && nameMatch[1]) {
                             currentTitle = nameMatch[1];
                         } else {
-                            // إذا لم يجد tvg-name، يأخذ أي نص بعد الفاصلة
                             currentTitle = line.split(',').pop();
                         }
                     } else if (line.startsWith('http') && currentTitle) {
-                        // إذا كان السطر هو رابط ومعه عنوان
                         channels.push({ name: currentTitle.trim(), url: line.trim() });
-                        currentTitle = null; // إعادة تعيين العنوان
+                        currentTitle = null; 
                     }
                 }
                 return channels;
             } catch (error) {
                 console.error('خطأ في جلب ملف القنوات:', error);
-                return []; // إرجاع قائمة فارغة عند الفشل
+                return [];
             }
         }
 
-        // وظيفة لفلترة (بحث) القنوات
+        // وظيفة لفلترة (بحث) القنوات (كما هي)
         function filterChannels() {
             const input = document.getElementById('search-bar');
             const filter = input.value.toUpperCase(); 
@@ -110,26 +81,23 @@
         // عند تحميل الصفحة، ابدأ بكل شيء
         document.addEventListener('DOMContentLoaded', async () => {
             const channelListElement = document.getElementById('channel-list');
-            
-            // *** تأكد من تسمية ملفك channels.m3u ***
             const channels = await parseM3U('channels.m3u'); 
 
             if (channels.length > 0) {
-                channelListElement.innerHTML = ''; // إفراغ رسالة "جاري التحميل"
+                channelListElement.innerHTML = ''; 
                 
                 channels.forEach(channel => {
                     const li = document.createElement('li');
                     li.innerText = channel.name;
-                    // عند النقر على القناة، شغلها
-                    li.onclick = () => playChannel(channel.name, channel.url);
+                    
+                    // *** تم تحديث هذا السطر ***
+                    // الآن نرسل "li" (العنصر نفسه) إلى وظيفة التشغيل
+                    li.onclick = () => playChannel(channel.name, channel.url, li);
+                    
                     channelListElement.appendChild(li);
                 });
             } else {
-                // في حال فشل تحميل الملف
                 channelListElement.innerHTML = '<li class="loading error">فشل تحميل قائمة القنوات. تأكد من وجود ملف channels.m3u</li>';
             }
         });
     </script>
-
-</body>
-</html>
