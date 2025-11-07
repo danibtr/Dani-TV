@@ -56,19 +56,19 @@ h1 {
     font-weight: 700;
 }
 
-/* 5. التقسيم الرئيسي (المشغل والقائمة) */
+/* 5. التقسيم الثلاثي (لابتوب) */
 .container {
     display: flex;
-    flex-wrap: wrap; 
-    max-width: 1200px;
+    flex-wrap: nowrap; /* منع الأعمدة من النزول تحت بعضها */
+    max-width: 1400px; /* زيادة العرض الأقصى */
     margin: 0 auto;
     padding: 0 20px;
     gap: 20px; 
 }
 
-/* 6. حاوية المشغل (القسم الأيمن) */
+/* 6. حاوية المشغل (القسم الأيسر) */
 .player-container {
-    flex: 3; 
+    flex: 3; /* 3 أجزاء (الأكبر) */
     min-width: 300px; 
     padding: 20px;
     background-color: var(--card-background);
@@ -95,26 +95,39 @@ video {
     border-radius: 5px;
 }
 
-/* 7. حاوية قائمة القنوات (القسم الأيسر) */
-.channel-list-container {
-    flex: 1; 
-    min-width: 250px;
-    padding: 20px;
+/* 7. حاويات القوائم (التصنيفات والقنوات) */
+.list-container {
     background-color: var(--card-background);
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    max-height: 70vh; 
+    padding: 20px;
+    max-height: 80vh; /* ارتفاع موحد */
     display: flex;
     flex-direction: column; 
 }
 
-.channel-list-container h2 {
+/* 8. حاوية التصنيفات (العمود الأيمن) */
+#category-container {
+    flex: 1; /* جزء واحد */
+    min-width: 200px;
+}
+
+/* 9. حاوية القنوات (العمود الأوسط) */
+#channel-list-container {
+    flex: 1.5; /* جزء ونصف */
+    min-width: 250px;
+}
+
+.list-container h2 {
     text-align: center;
     margin-top: 0;
     color: var(--primary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* 8. شريط البحث (مع تحسين الظل) */
+/* 10. شريط البحث */
 #search-bar {
     width: 95%;
     padding: 10px;
@@ -132,15 +145,15 @@ video {
     outline: none;
 }
 
-/* 9. القائمة الفعلية (مع الفواصل الجديدة) */
-#channel-list {
+/* 11. تصميم القوائم (مشترك للتصنيفات والقنوات) */
+#category-list, #channel-list {
     list-style: none;
     padding: 0;
     margin: 0;
     overflow-y: auto; 
 }
 
-#channel-list li {
+#category-list li, #channel-list li {
     padding: 12px 15px;
     border-bottom: 2px solid var(--background-color); 
     cursor: pointer; 
@@ -151,8 +164,8 @@ video {
     white-space: nowrap;
 }
 
-/* 10. تأثير تمرير الماوس (Hover) */
-#channel-list li:hover {
+/* 12. تأثير تمرير الماوس (Hover) */
+#category-list li:hover, #channel-list li:hover {
     background-color: var(--primary-color);
     color: var(--white-text); 
     transform: scale(1.03); 
@@ -160,43 +173,60 @@ video {
     border-bottom-color: var(--primary-color); 
 }
 
-/* 11. تصميم القناة "الفعالة" */
-#channel-list li.active {
+/* 13. تصميم العنصر "الفعال" (Active) */
+#category-list li.active, #channel-list li.active {
     background-color: var(--primary-color);
     color: var(--white-text);
     font-weight: 700; 
     border-bottom-color: var(--primary-color);
 }
 
-/* 12. تصميم شريط التمرير الجديد */
-#channel-list::-webkit-scrollbar {
+.loading {
+    text-align: center;
+    color: #888;
+    cursor: default;
+}
+.loading.error {
+    color: red;
+    font-weight: bold;
+}
+
+/* 14. تصميم شريط التمرير */
+#category-list::-webkit-scrollbar, #channel-list::-webkit-scrollbar {
     width: 8px; 
 }
-#channel-list::-webkit-scrollbar-track {
+#category-list::-webkit-scrollbar-track, #channel-list::-webkit-scrollbar-track {
     background: var(--background-color); 
     border-radius: 10px;
 }
-#channel-list::-webkit-scrollbar-thumb {
+#category-list::-webkit-scrollbar-thumb, #channel-list::-webkit-scrollbar-thumb {
     background: #ccc; 
     border-radius: 10px;
 }
-#channel-list::-webkit-scrollbar-thumb:hover {
-    background: #bbb; 
-}
 
-
-/* 13. كود التجاوب (Media Query) */
-@media (max-width: 768px) {
+/* 15. كود التجاوب (Media Query) للموبايل */
+@media (max-width: 900px) { /* زيادة نقطة التجاوب */
     .container {
-        flex-direction: column-reverse; 
-        gap: 0;
+        flex-direction: column; /* جعل الأعمدة فوق بعضها */
+        gap: 20px;
     }
+    
+    .list-container {
+        max-height: 40vh; /* تحديد ارتفاع القوائم على الموبايل */
+    }
+
+    /* تغيير ترتيب ظهور العناصر على الموبايل */
+    /* هذا الكود البرمجي المتقدم يضع المشغل في الأسفل */
     .player-container {
-        margin-top: 20px; 
+        order: 3;
     }
-    .channel-list-container {
-        max-height: 40vh;
+    #category-container {
+        order: 1;
     }
+    #channel-list-container {
+        order: 2;
+    }
+
     header {
         width: 90%;
         padding: 15px;
