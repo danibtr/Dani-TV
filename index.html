@@ -6,24 +6,30 @@
     <title>Dani TV - البث المباشر</title>
     
     <link rel="stylesheet" href="style.css">
-    
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
 
     <header>
         <img src="logo.png" alt="Dani TV Logo" class="logo">
         <h1>Dani TV</h1>
+        <button id="settings-btn" title="إعدادات">⚙️</button>
     </header>
+
+    <div id="settings-panel" class="settings-panel" style="display: none;">
+        <h3>تحديث قائمة القنوات (Xtream)</h3>
+        <p>الصق رابط `get.php` الجديد هنا:</p>
+        <input type="text" id="m3u-url-input" placeholder="http://...type=m3u_plus">
+        <button id="update-m3u-btn">تحديث وحفظ</button>
+        <button id="clear-m3u-btn">مسح والعودة للملف المحلي</button>
+        <p class="settings-note">ملاحظة: سيتم حفظ الرابط في متصفحك. هذا يستخدم بروكسي مجاني وقد لا يعمل دائماً.</p>
+    </div>
 
     <div class="container">
         
@@ -44,7 +50,6 @@
         
         <div class="player-container">
             <h2 id="channel-title">اختر قناة لتبدأ</h2>
-            
             <video id="videoPlayer" autoplay muted></video>
         </div>
         
@@ -57,8 +62,6 @@
         let activeCategoryElement = null; 
         let activeChannelElement = null; 
         
-        // 8. (جديد) تفعيل مشغل Plyr.io
-        // هذا السطر يحول الفيديو العادي إلى مشغل احترافي
         const player = new Plyr(video, {
             captions: { active: false, language: 'auto', update: false },
             autoplay: true,
@@ -68,39 +71,63 @@
         if (Hls.isSupported()) {
             hls = new Hls();
             hls.attachMedia(video);
-        } else {
-            console.warn("HLS.js غير مدعوم.");
         }
+        
+        const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+
+        // --- (جديد) وظائف لوحة الإعدادات ---
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsPanel = document.getElementById('settings-panel');
+        const updateBtn = document.getElementById('update-m3u-btn');
+        const clearBtn = document.getElementById('clear-m3u-btn');
+        const m3uInput = document.getElementById('m3u-url-input');
+
+        settingsBtn.onclick = () => {
+            settingsPanel.style.display = (settingsPanel.style.display === 'none') ? 'block' : 'none';
+        };
+
+        updateBtn.onclick = () => {
+            const newUrl = m3uInput.value.trim();
+            if (newUrl && (newUrl.startsWith('http://') || newUrl.startsWith('https://'))) {
+                localStorage.setItem('xtream_url', newUrl);
+                alert('تم حفظ الرابط! سيتم إعادة تحميل الصفحة لتطبيق التغييرات.');
+                location.reload(); 
+            } else {
+                alert('الرجاء إدخال رابط صحيح.');
+            }
+        };
+
+        clearBtn.onclick = () => {
+            localStorage.removeItem('xtream_url');
+            alert('تم مسح الرابط. سيعود الموقع لاستخدام ملف channels.m3u المحلي.');
+            location.reload();
+        };
+        // --- نهاية وظائف الإعدادات ---
+
 
         function playChannel(name, url, clickedElement) {
             document.getElementById('channel-title').innerText = `أنت تشاهد الآن: ${name}`;
             
-            if (activeChannelElement) {
-                activeChannelElement.classList.remove('active');
-            }
+            if (activeChannelElement) activeChannelElement.classList.remove('active');
             clickedElement.classList.add('active');
             activeChannelElement = clickedElement;
 
             if (Hls.isSupported() && hls) {
                 hls.loadSource(url);
-                hls.on(Hls.Events.MEDIA_ATTACHED, () => player.play()); // استخدم .play() من Plyr
+                hls.on(Hls.Events.MEDIA_ATTACHED, () => player.play()); 
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
-                video.addEventListener('loadedmetadata', () => player.play()); // استخدم .play() من Plyr
+                video.addEventListener('loadedmetadata', () => player.play()); 
             }
             
-            if (window.innerWidth < 768) {
+            if (window.innerWidth < 900) { // تم تعديل الرقم ليتناسب مع التصميم الجديد
                 document.getElementById('player-container').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
-        async function parseM3U(fileUrl) {
+        async function parseM3U(m3uText) {
             try {
-                const response = await fetch(fileUrl); 
-                if (!response.ok) throw new Error('فشل تحميل الملف - 404');
-                
-                const text = await response.text();
-                const lines = text.split('\n');
+                const lines = m3uText.split('\n');
                 const categories = { "متفرقات": [] }; 
                 let currentTitle = null;
                 let currentGroup = "متفرقات"; 
@@ -123,7 +150,7 @@
                 }
                 return categories;
             } catch (error) {
-                console.error('خطأ في جلب ملف القنوات:', error);
+                console.error('خطأ في تحليل النص:', error);
                 return { "خطأ": [] }; 
             }
         }
@@ -135,11 +162,8 @@
             const li = ul.getElementsByTagName('li');
             for (let i = 0; i < li.length; i++) {
                 const txtValue = li[i].textContent || li[i].innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    li[i].style.display = "";
-                } else {
-                    li[i].style.display = "none";
-                }
+                if (txtValue.toUpperCase().indexOf(filter) > -1) li[i].style.display = "";
+                else li[i].style.display = "none";
             }
         }
 
@@ -149,9 +173,7 @@
             channelList.innerHTML = ''; 
             document.getElementById('channel-list-title').innerText = categoryName;
 
-            if (activeCategoryElement) {
-                activeCategoryElement.classList.remove('active');
-            }
+            if (activeCategoryElement) activeCategoryElement.classList.remove('active');
             clickedElement.classList.add('active');
             activeCategoryElement = clickedElement;
 
@@ -171,19 +193,23 @@
                 channelList.innerHTML = '<li class="loading">لا توجد قنوات في هذا التصنيف.</li>';
             }
         }
-
-        document.addEventListener('DOMContentLoaded', async () => {
+        
+        function renderCategories(categories) {
             const categoryList = document.getElementById('category-list');
-            
-            // التأكد من أننا نبحث عن الاسم الإنجليزي الصحيح للملف
-            categoriesData = await parseM3U('channels.m3u'); 
-            
-            const categoryNames = Object.keys(categoriesData);
+            const categoryNames = Object.keys(categories);
 
             if (categoryNames.length > 0 && categoryNames[0] !== "خطأ") {
                 categoryList.innerHTML = ''; 
                 
-                categoryNames.forEach(name => {
+                // (جديد) برمجة خاصة لجعل "beIN" أولاً
+                const sortedCategories = categoryNames.sort((a, b) => {
+                    if (a.toLowerCase().includes('bein')) return -1;
+                    if (b.toLowerCase().includes('bein')) return 1;
+                    return 0;
+                });
+                // --- نهاية كود الترتيب ---
+
+                sortedCategories.forEach(name => {
                     const li = document.createElement('li');
                     li.innerText = name;
                     li.onclick = () => displayChannels(name, li);
@@ -191,11 +217,45 @@
                 });
                 
                 if(categoryList.firstChild){
-                    categoryList.firstChild.click();
+                    // عرض أول تصنيف (الذي أصبح beIN)
+                    displayChannels(sortedCategories[0], categoryList.firstChild);
+                    categoryList.firstChild.classList.add('active'); 
+                    activeCategoryElement = categoryList.firstChild;
                 }
             } else {
-                categoryList.innerHTML = '<li class="loading error">فشل تحميل التصنيفات.</li>';
-                document.getElementById('channel-list').innerHTML = '<li class="loading error">تأكد من وجود ملف "channels.m3u"</li>';
+                throw new Error("فشل تحليل التصنيفات");
+            }
+        }
+
+        // (محدث) عند تحميل الصفحة، ابدأ بكل شيء
+        document.addEventListener('DOMContentLoaded', async () => {
+            const categoryList = document.getElementById('category-list');
+            const channelList = document.getElementById('channel-list');
+            const savedUrl = localStorage.getItem('xtream_url'); 
+            
+            if (savedUrl) m3uInput.value = savedUrl;
+
+            try {
+                let m3uText;
+                if (savedUrl) {
+                    console.log("جاري التحميل من الرابط المحفوظ:", savedUrl);
+                    const response = await fetch(`${CORS_PROXY}${encodeURIComponent(savedUrl)}`);
+                    if (!response.ok) throw new Error('فشل جلب الرابط من البروكسي');
+                    m3uText = await response.text();
+                } else {
+                    console.log("جاري التحميل من الملف المحلي: channels.m3u");
+                    const response = await fetch('channels.m3u');
+                    if (!response.ok) throw new Error('فشل تحميل الملف المحلي channels.m3u');
+                    m3uText = await response.text();
+                }
+
+                categoriesData = await parseM3U(m3uText);
+                renderCategories(categoriesData);
+
+            } catch (error) {
+                console.error(error);
+                categoryList.innerHTML = `<li class="loading error">${error.message}</li>`;
+                channelList.innerHTML = `<li class="loading error">يرجى التحقق من الرابط في الإعدادات أو الملف المحلي.</li>`;
             }
         });
     </script>

@@ -10,12 +10,13 @@
     --white-text: #FFFFFF;
     --list-item-bg: #f9f9f9;
     --list-item-border: #f0f0f0;
+    --plyr-color-main: var(--primary-color);
 }
 
 /* 3. تعريف "الحركة" (Animations) */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 @keyframes pulseLive {
     0% { opacity: 1; }
@@ -33,42 +34,111 @@ body {
     animation: fadeIn 0.5s ease-in-out;
 }
 
-/* 4. تنسيق الهيدر (رأس الصفحة) */
+/* 4. (محدث) تنسيق الهيدر */
 header {
-    padding: 20px 5%;
+    padding: 0 20px;
     background-color: var(--card-background);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     display: flex;
     align-items: center;
-    width: 90%;
-    margin: 0 auto 20px auto;
-    border-radius: 0 0 10px 10px;
+    width: 100%;
+    margin: 0;
+    height: 70px;
+    z-index: 1000; 
+    box-sizing: border-box; 
 }
 
 .logo {
-    height: 50px;
+    height: 45px;
     width: auto;
-    margin-left: 15px; 
+    margin-left: 10px; 
 }
 
 h1 {
     color: var(--text-color);
     margin: 0;
-    font-size: 2em;
+    font-size: 1.8em;
     font-weight: 700;
 }
 
-/* 5. التقسيم الثلاثي (لابتوب) */
+/* 5. (جديد) زر الإعدادات */
+#settings-btn {
+    font-size: 1.5em; /* تصغير حجم الترس قليلاً */
+    font-weight: bold;
+    color: var(--text-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 15px;
+    transition: color 0.2s;
+    margin-right: auto; /* دفعه إلى أقصى اليمين (في RTL) */
+}
+#settings-btn:hover {
+    color: var(--primary-color);
+}
+
+
+/* 6. (جديد) لوحة الإعدادات */
+.settings-panel {
+    max-width: 100%;
+    margin: 0; /* ستكون ملتصقة بالهيدر */
+    padding: 20px;
+    background-color: #fff;
+    border-bottom: 2px solid var(--background-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.settings-panel h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+.settings-panel input[type="text"] {
+    width: 90%;
+    max-width: 500px;
+    padding: 10px;
+    font-family: 'Cairo', sans-serif;
+    border: 2px solid #eee;
+    border-radius: 5px;
+}
+.settings-panel button {
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--primary-color);
+    color: var(--white-text);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+.settings-panel button:hover {
+    background-color: #d96262; 
+}
+#clear-m3u-btn {
+    background-color: #aaa;
+    margin-right: 10px;
+}
+#clear-m3u-btn:hover {
+    background-color: #888;
+}
+.settings-note {
+    font-size: 0.8em;
+    color: #777;
+    margin-top: 15px;
+}
+
+
+/* 7. (محدث) عودة التصميم الثلاثي (لابتوب) */
 .container {
     display: flex;
     flex-wrap: nowrap; 
     max-width: 1400px; 
-    margin: 0 auto;
+    margin: 20px auto; /* هامش علوي وسفلي */
     padding: 0 20px;
     gap: 20px; 
 }
 
-/* 6. حاوية المشغل (القسم الأيسر) */
+/* 8. (محدث) حاوية المشغل */
 .player-container {
     flex: 3; 
     min-width: 300px; 
@@ -78,26 +148,15 @@ h1 {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/*
- * ⭐️⭐️⭐️ هذا هو الإصلاح الأول (عنوان المشغل) ⭐️⭐️⭐️
- * تم حذف "white-space: nowrap" و "height"
- * للسماح للعنوان بالالتفاف (Wrap) إذا كان طويلاً
-*/
 #channel-title {
     color: var(--primary-color);
     text-align: center;
     border-bottom: 2px solid var(--background-color);
     padding-bottom: 10px;
-    /* (تم حذف) height: 1.2em; */
-    /* (تم حذف) overflow: hidden; */
-    /* (تم حذف) text-overflow: ellipsis; */
-    /* (تم حذف) white-space: nowrap; */
-    animation: pulseLive 2.5s infinite ease-in-out;
-    /* (جديد) ضمان ارتفاع بسيط حتى لو كان فارغاً */
     min-height: 1.2em; 
+    animation: pulseLive 2.5s infinite ease-in-out;
 }
 
-/* 7. تنسيق حاوية المشغل Plyr */
 #videoPlayer {
     background-color: #000;
     border-radius: 5px;
@@ -105,46 +164,36 @@ h1 {
     height: auto;
 }
 
-/* 8. حاويات القوائم (التصنيفات والقنوات) */
+/* 9. (محدث) حاويات القوائم (التصنيفات والقنوات) */
 .list-container {
     background-color: var(--card-background);
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     padding: 20px;
-    max-height: 80vh; 
+    /* (مهم) تعديل الارتفاع ليتناسب مع ارتفاع الصفحة */
+    max-height: calc(100vh - 70px - 60px); /* ارتفاع الشاشة - الهيدر - الهوامش */
     display: flex;
     flex-direction: column; 
 }
 
-/* 9. حاوية التصنيفات (العمود الأيمن) */
 #category-container {
     flex: 1; 
     min-width: 200px;
 }
 
-/* 10. حاوية القنوات (العمود الأوسط) */
 #channel-list-container {
     flex: 1.5; 
     min-width: 250px;
 }
 
-/*
- * ⭐️⭐️⭐️ هذا هو الإصلاح الثاني (عناوين القوائم) ⭐️⭐️⭐️
- * تم حذف "white-space: nowrap"
- * للسماح للعنوان بالالتفاف (Wrap) إذا كان طويلاً
-*/
 .list-container h2 {
     text-align: center;
     margin-top: 0;
     color: var(--primary-color);
-    /* (تم حذف) white-space: nowrap; */
-    /* (تم حذف) overflow: hidden; */
-    /* (تم حذف) text-overflow: ellipsis; */
-    /* (جديد) ضمان ارتفاع بسيط حتى لو كان فارغاً */
     min-height: 1.2em;
 }
 
-/* 11. شريط البحث */
+/* 10. شريط البحث */
 #search-bar {
     width: 95%;
     padding: 10px;
@@ -162,15 +211,13 @@ h1 {
     outline: none;
 }
 
-/* 12. القوائم (تصميم البطاقات الاحترافي) */
+/* 11. تصميم البطاقات (للقوائم) (كما هو) */
 #category-list, #channel-list {
     list-style: none;
-    padding: 0;
+    padding: 0 5px; 
     margin: 0;
     overflow-y: auto; 
-    padding-right: 5px;
 }
-
 #category-list li, #channel-list li {
     padding: 12px 15px;
     margin-bottom: 8px; 
@@ -183,18 +230,14 @@ h1 {
     transition: all 0.2s ease-in-out; 
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap; /* هذا السطر يبقى هنا (لأسماء القنوات) */
+    white-space: nowrap; 
 }
-
-/* 13. تأثير تمرير الماوس (Hover) */
 #category-list li:hover, #channel-list li:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
     background-color: var(--card-background); 
     border-color: #ddd;
 }
-
-/* 14. تصميم العنصر "الفعال" (Active) */
 #category-list li.active, #channel-list li.active {
     background-color: var(--primary-color);
     color: var(--white-text);
@@ -209,21 +252,10 @@ h1 {
     transform: translateY(-1px);
     box-shadow: 0 2px 5px rgba(229, 115, 115, 0.4);
 }
+.loading { text-align: center; color: #888; cursor: default; background: transparent !important; box-shadow: none !important; border: none !important; }
+.loading.error { color: red; font-weight: bold; }
 
-.loading {
-    text-align: center;
-    color: #888;
-    cursor: default;
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-.loading.error {
-    color: red;
-    font-weight: bold;
-}
-
-/* 15. تصميم شريط التمرير */
+/* 12. تصميم شريط التمرير */
 #category-list::-webkit-scrollbar, #channel-list::-webkit-scrollbar {
     width: 8px; 
 }
@@ -236,7 +268,7 @@ h1 {
     border-radius: 10px;
 }
 
-/* 16. كود التجاوب (Media Query) للموبايل */
+/* 13. (محدث) كود التجاوب (Media Query) للموبايل */
 @media (max-width: 900px) { 
     .container {
         flex-direction: column; 
@@ -247,15 +279,18 @@ h1 {
         max-height: 40vh; 
     }
 
+    /* (محدث) ترتيب الأعمدة للموبايل */
     .player-container { order: 3; }
     #category-container { order: 1; }
     #channel-list-container { order: 2; }
 
     header {
-        width: 90%;
-        padding: 15px;
+        padding: 0 15px;
     }
     h1 {
         font-size: 1.5em;
+    }
+    #settings-btn {
+        font-size: 1.8em;
     }
 }
