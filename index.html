@@ -90,25 +90,18 @@
         
         const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 
-        // --- (جديد) وظائف التبويبات ---
+        // --- وظائف التبويبات ---
         function showView(viewId) {
-            // إخفاء جميع الحاويات
             document.getElementById('live-tv-view').style.display = 'none';
             document.getElementById('codes-view').style.display = 'none';
-            
-            // إزالة التمييز (active) من جميع الأزرار
             document.getElementById('tab-livetv').classList.remove('active');
             document.getElementById('tab-codes').classList.remove('active');
-
-            // إظهار الحاوية المطلوبة
             document.getElementById(viewId).style.display = 'block';
-            
-            // تمييز الزر المطلوب
             const activeTabBtn = (viewId === 'live-tv-view') ? 'tab-livetv' : 'tab-codes';
             document.getElementById(activeTabBtn).classList.add('active');
         }
 
-        // --- (جديد) وظائف نسخ الكود ---
+        // --- وظائف نسخ الكود ---
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 alert("تم نسخ: " + text);
@@ -117,7 +110,7 @@
             });
         }
 
-        // --- (جديد) وظيفة جلب وعرض الأكواد ---
+        // --- وظيفة جلب وعرض الأكواد ---
         async function loadFreeCodes() {
             try {
                 const response = await fetch('codes.json');
@@ -125,25 +118,26 @@
                 const codes = await response.json();
                 
                 const codesListDiv = document.getElementById('codes-list');
-                codesListDiv.innerHTML = ''; // إفراغ القائمة
+                codesListDiv.innerHTML = ''; 
                 
                 codes.forEach(code => {
                     const card = document.createElement('div');
                     card.className = 'code-card';
+                    // (مهم) التأكد من أن النص يظهر LTR للأكواد
                     card.innerHTML = `
                         <div class="code-field">
                             <label>Host:</label>
-                            <input type="text" value="${code.host}" readonly>
+                            <input type="text" value="${code.host}" readonly style="direction: ltr;">
                             <button onclick="copyToClipboard('${code.host}')">نسخ</button>
                         </div>
                         <div class="code-field">
                             <label>User:</label>
-                            <input type="text" value="${code.user}" readonly>
+                            <input type="text" value="${code.user}" readonly style="direction: ltr;">
                             <button onclick="copyToClipboard('${code.user}')">نسخ</button>
                         </div>
                         <div class="code-field">
                             <label>Pass:</label>
-                            <input type="text" value="${code.pass}" readonly>
+                            <input type="text" value="${code.pass}" readonly style="direction: ltr;">
                             <button onclick="copyToClipboard('${code.pass}')">نسخ</button>
                         </div>
                         <p class="code-note">ملاحظة: ${code.note}</p>
@@ -157,8 +151,7 @@
             }
         }
 
-
-        // --- وظائف لوحة الإعدادات (كما هي) ---
+        // --- وظائف لوحة الإعدادات ---
         const settingsBtn = document.getElementById('settings-btn');
         const settingsPanel = document.getElementById('settings-panel');
         const updateBtn = document.getElementById('update-m3u-btn');
@@ -192,7 +185,7 @@
             location.reload();
         };
 
-        // --- وظائف البث المباشر (كما هي) ---
+        // --- وظائف البث المباشر ---
         function playChannel(name, url, clickedElement) {
             document.getElementById('channel-title').innerText = `أنت تشاهد الآن: ${name}`;
             if (activeChannelElement) activeChannelElement.classList.remove('active');
