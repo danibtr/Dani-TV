@@ -8,7 +8,6 @@
     --text-color: #333333;     
     --card-background: #FFFFFF;  
     --white-text: #FFFFFF;
-    /* (جديد) لون البطاقة الافتراضي */
     --list-item-bg: #f9f9f9;
     --list-item-border: #f0f0f0;
 }
@@ -79,16 +78,23 @@ h1 {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/*
+ * ⭐️⭐️⭐️ هذا هو الإصلاح الأول (عنوان المشغل) ⭐️⭐️⭐️
+ * تم حذف "white-space: nowrap" و "height"
+ * للسماح للعنوان بالالتفاف (Wrap) إذا كان طويلاً
+*/
 #channel-title {
     color: var(--primary-color);
     text-align: center;
     border-bottom: 2px solid var(--background-color);
     padding-bottom: 10px;
-    height: 1.2em; 
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* (تم حذف) height: 1.2em; */
+    /* (تم حذف) overflow: hidden; */
+    /* (تم حذف) text-overflow: ellipsis; */
+    /* (تم حذف) white-space: nowrap; */
     animation: pulseLive 2.5s infinite ease-in-out;
+    /* (جديد) ضمان ارتفاع بسيط حتى لو كان فارغاً */
+    min-height: 1.2em; 
 }
 
 /* 7. تنسيق حاوية المشغل Plyr */
@@ -122,13 +128,20 @@ h1 {
     min-width: 250px;
 }
 
+/*
+ * ⭐️⭐️⭐️ هذا هو الإصلاح الثاني (عناوين القوائم) ⭐️⭐️⭐️
+ * تم حذف "white-space: nowrap"
+ * للسماح للعنوان بالالتفاف (Wrap) إذا كان طويلاً
+*/
 .list-container h2 {
     text-align: center;
     margin-top: 0;
     color: var(--primary-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* (تم حذف) white-space: nowrap; */
+    /* (تم حذف) overflow: hidden; */
+    /* (تم حذف) text-overflow: ellipsis; */
+    /* (جديد) ضمان ارتفاع بسيط حتى لو كان فارغاً */
+    min-height: 1.2em;
 }
 
 /* 11. شريط البحث */
@@ -149,73 +162,53 @@ h1 {
     outline: none;
 }
 
-/* 12. القوائم (التصنيفات والقنوات) */
+/* 12. القوائم (تصميم البطاقات الاحترافي) */
 #category-list, #channel-list {
     list-style: none;
     padding: 0;
     margin: 0;
     overflow-y: auto; 
-    /* (جديد) إضافة مساحة بسيطة من الحواف */
     padding-right: 5px;
 }
 
-
-/* * ============================================
- * ⭐️ هذا هو التعديل الاحترافي للقائمة ⭐️
- * ============================================
-*/
-
 #category-list li, #channel-list li {
     padding: 12px 15px;
-    
-    /* (جديد) الفاصل الواضح بين البطاقات */
     margin-bottom: 8px; 
-    
-    /* (جديد) خلفية البطاقة وحوافها */
     background-color: var(--list-item-bg);
     border: 1px solid var(--list-item-border);
-    border-radius: 6px; /* حواف دائرية */
-    
-    /* (جديد) الظل الخفيف للبروز */
+    border-radius: 6px; 
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    
     cursor: pointer; 
     font-size: 0.9em;
     transition: all 0.2s ease-in-out; 
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: nowrap; /* هذا السطر يبقى هنا (لأسماء القنوات) */
 }
 
-/* 14. تأثير تمرير الماوس (Hover) الجديد */
+/* 13. تأثير تمرير الماوس (Hover) */
 #category-list li:hover, #channel-list li:hover {
-    /* (جديد) تأثير "الرفع" الاحترافي */
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-    background-color: var(--card-background); /* جعلها أفتح عند التمرير */
+    background-color: var(--card-background); 
     border-color: #ddd;
 }
 
-/* 15. تصميم العنصر "الفعال" (Active) الجديد */
+/* 14. تصميم العنصر "الفعال" (Active) */
 #category-list li.active, #channel-list li.active {
     background-color: var(--primary-color);
     color: var(--white-text);
     font-weight: 700; 
     border-color: var(--primary-color);
-    /* (جديد) ظل بلون الهوية */
     box-shadow: 0 2px 5px rgba(229, 115, 115, 0.4);
     transform: translateY(-1px);
 }
-
-/* (جديد) منع تأثير الهوفر على العنصر النشط */
 #category-list li.active:hover, #channel-list li.active:hover {
     background-color: var(--primary-color);
     color: var(--white-text);
     transform: translateY(-1px);
     box-shadow: 0 2px 5px rgba(229, 115, 115, 0.4);
 }
-/* ============================================ */
-
 
 .loading {
     text-align: center;
@@ -230,7 +223,7 @@ h1 {
     font-weight: bold;
 }
 
-/* 16. تصميم شريط التمرير */
+/* 15. تصميم شريط التمرير */
 #category-list::-webkit-scrollbar, #channel-list::-webkit-scrollbar {
     width: 8px; 
 }
@@ -243,7 +236,7 @@ h1 {
     border-radius: 10px;
 }
 
-/* 17. كود التجاوب (Media Query) للموبايل */
+/* 16. كود التجاوب (Media Query) للموبايل */
 @media (max-width: 900px) { 
     .container {
         flex-direction: column; 
