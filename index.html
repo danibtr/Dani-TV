@@ -23,36 +23,51 @@
     </header>
 
     <div id="settings-panel" class="settings-panel" style="display: none;">
-        <h3>تحديث قائمة القنوات (Xtream)</h3>
-        <p>الصق رابط `get.php` الجديد هنا:</p>
-        <input type="text" id="m3u-url-input" placeholder="http://...type=m3u_plus">
+        <h3>بيانات خادم Xtream</h3>
+        <label for="host-input">Host (URL:Port)</label>
+        <input type="text" id="host-input" placeholder="http://example.com:8080">
+        <label for="user-input">Username</label>
+        <input type="text" id="user-input" placeholder="اسم المستخدم">
+        <label for="pass-input">Password</label>
+        <input type="text" id="pass-input" placeholder="كلمة المرور">
         <button id="update-m3u-btn">تحديث وحفظ</button>
         <button id="clear-m3u-btn">مسح والعودة للملف المحلي</button>
-        <p class="settings-note">ملاحظة: سيتم حفظ الرابط في متصفحك. هذا يستخدم بروكسي مجاني وقد لا يعمل دائماً.</p>
     </div>
 
-    <div class="container">
-        
-        <div class="list-container" id="category-container">
-            <h2>التصنيفات</h2>
-            <ul id="category-list">
-                <li class="loading">جاري تحميل التصنيفات...</li>
-            </ul>
-        </div>
+    <nav class="tabs-nav">
+        <button id="tab-livetv" class="tab-btn active" onclick="showView('live-tv-view')">📺 البث المباشر</button>
+        <button id="tab-codes" class="tab-btn" onclick="showView('codes-view')">🔑 أكواد مجانية</button>
+    </nav>
 
-        <div class="list-container" id="channel-list-container">
-            <h2 id="channel-list-title">القنوات</h2>
-            <input type="text" id="search-bar" onkeyup="filterChannels()" placeholder="ابحث في هذا التصنيف...">
-            <ul id="channel-list">
-                <li class="loading">اختر تصنيفاً أولاً...</li>
-            </ul>
+    <div id="live-tv-view" class="view-container active-view">
+        <div class="container">
+            <div class="list-container" id="category-container">
+                <h2>التصنيفات</h2>
+                <ul id="category-list">
+                    <li class="loading">جاري تحميل التصنيفات...</li>
+                </ul>
+            </div>
+            <div class="list-container" id="channel-list-container">
+                <h2 id="channel-list-title">القنوات</h2>
+                <input type="text" id="search-bar" onkeyup="filterChannels()" placeholder="ابحث في هذا التصنيف...">
+                <ul id="channel-list">
+                    <li class="loading">اختر تصنيفاً أولاً...</li>
+                </ul>
+            </div>
+            <div class="player-container">
+                <h2 id="channel-title">اختر قناة لتبدأ</h2>
+                <video id="videoPlayer" autoplay muted></video>
+            </div>
         </div>
-        
-        <div class="player-container">
-            <h2 id="channel-title">اختر قناة لتبدأ</h2>
-            <video id="videoPlayer" autoplay muted></video>
+    </div>
+
+    <div id="codes-view" class="view-container" style="display: none;">
+        <div class="codes-container">
+            <h2>أكواد Xtream (للتجربة)</h2>
+            <p>انسخ البيانات وأدخلها في لوحة الإعدادات (⚙️) في الأعلى.</p>
+            <div id="codes-list">
+                </div>
         </div>
-        
     </div>
 
     <script>
@@ -75,43 +90,114 @@
         
         const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 
-        // --- (جديد) وظائف لوحة الإعدادات ---
+        // --- (جديد) وظائف التبويبات ---
+        function showView(viewId) {
+            // إخفاء جميع الحاويات
+            document.getElementById('live-tv-view').style.display = 'none';
+            document.getElementById('codes-view').style.display = 'none';
+            
+            // إزالة التمييز (active) من جميع الأزرار
+            document.getElementById('tab-livetv').classList.remove('active');
+            document.getElementById('tab-codes').classList.remove('active');
+
+            // إظهار الحاوية المطلوبة
+            document.getElementById(viewId).style.display = 'block';
+            
+            // تمييز الزر المطلوب
+            const activeTabBtn = (viewId === 'live-tv-view') ? 'tab-livetv' : 'tab-codes';
+            document.getElementById(activeTabBtn).classList.add('active');
+        }
+
+        // --- (جديد) وظائف نسخ الكود ---
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("تم نسخ: " + text);
+            }, (err) => {
+                alert("فشل النسخ.");
+            });
+        }
+
+        // --- (جديد) وظيفة جلب وعرض الأكواد ---
+        async function loadFreeCodes() {
+            try {
+                const response = await fetch('codes.json');
+                if (!response.ok) throw new Error('فشل تحميل ملف الأكواد');
+                const codes = await response.json();
+                
+                const codesListDiv = document.getElementById('codes-list');
+                codesListDiv.innerHTML = ''; // إفراغ القائمة
+                
+                codes.forEach(code => {
+                    const card = document.createElement('div');
+                    card.className = 'code-card';
+                    card.innerHTML = `
+                        <div class="code-field">
+                            <label>Host:</label>
+                            <input type="text" value="${code.host}" readonly>
+                            <button onclick="copyToClipboard('${code.host}')">نسخ</button>
+                        </div>
+                        <div class="code-field">
+                            <label>User:</label>
+                            <input type="text" value="${code.user}" readonly>
+                            <button onclick="copyToClipboard('${code.user}')">نسخ</button>
+                        </div>
+                        <div class="code-field">
+                            <label>Pass:</label>
+                            <input type="text" value="${code.pass}" readonly>
+                            <button onclick="copyToClipboard('${code.pass}')">نسخ</button>
+                        </div>
+                        <p class="code-note">ملاحظة: ${code.note}</p>
+                    `;
+                    codesListDiv.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('codes-list').innerHTML = `<p class="loading error">فشل تحميل قائمة الأكواد: ${error.message}</p>`;
+            }
+        }
+
+
+        // --- وظائف لوحة الإعدادات (كما هي) ---
         const settingsBtn = document.getElementById('settings-btn');
         const settingsPanel = document.getElementById('settings-panel');
         const updateBtn = document.getElementById('update-m3u-btn');
         const clearBtn = document.getElementById('clear-m3u-btn');
-        const m3uInput = document.getElementById('m3u-url-input');
+        const hostInput = document.getElementById('host-input');
+        const userInput = document.getElementById('user-input');
+        const passInput = document.getElementById('pass-input');
 
         settingsBtn.onclick = () => {
             settingsPanel.style.display = (settingsPanel.style.display === 'none') ? 'block' : 'none';
         };
-
         updateBtn.onclick = () => {
-            const newUrl = m3uInput.value.trim();
-            if (newUrl && (newUrl.startsWith('http://') || newUrl.startsWith('https://'))) {
-                localStorage.setItem('xtream_url', newUrl);
-                alert('تم حفظ الرابط! سيتم إعادة تحميل الصفحة لتطبيق التغييرات.');
+            const host = hostInput.value.trim();
+            const user = userInput.value.trim();
+            const pass = passInput.value.trim();
+            if (host && user && pass) {
+                localStorage.setItem('xtream_host', host);
+                localStorage.setItem('xtream_user', user);
+                localStorage.setItem('xtream_pass', pass);
+                alert('تم حفظ البيانات! سيتم إعادة تحميل الصفحة لتطبيق التغييرات.');
                 location.reload(); 
             } else {
-                alert('الرجاء إدخال رابط صحيح.');
+                alert('الرجاء ملء جميع الحقول الثلاثة (Host, Username, Password).');
             }
         };
-
         clearBtn.onclick = () => {
-            localStorage.removeItem('xtream_url');
-            alert('تم مسح الرابط. سيعود الموقع لاستخدام ملف channels.m3u المحلي.');
+            localStorage.removeItem('xtream_host');
+            localStorage.removeItem('xtream_user');
+            localStorage.removeItem('xtream_pass');
+            alert('تم مسح البيانات. سيعود الموقع لاستخدام ملف channels.m3u المحلي.');
             location.reload();
         };
-        // --- نهاية وظائف الإعدادات ---
 
-
+        // --- وظائف البث المباشر (كما هي) ---
         function playChannel(name, url, clickedElement) {
             document.getElementById('channel-title').innerText = `أنت تشاهد الآن: ${name}`;
-            
             if (activeChannelElement) activeChannelElement.classList.remove('active');
             clickedElement.classList.add('active');
             activeChannelElement = clickedElement;
-
             if (Hls.isSupported() && hls) {
                 hls.loadSource(url);
                 hls.on(Hls.Events.MEDIA_ATTACHED, () => player.play()); 
@@ -119,27 +205,22 @@
                 video.src = url;
                 video.addEventListener('loadedmetadata', () => player.play()); 
             }
-            
-            if (window.innerWidth < 900) { // تم تعديل الرقم ليتناسب مع التصميم الجديد
+            if (window.innerWidth < 900) {
                 document.getElementById('player-container').scrollIntoView({ behavior: 'smooth' });
             }
         }
-
         async function parseM3U(m3uText) {
             try {
                 const lines = m3uText.split('\n');
                 const categories = { "متفرقات": [] }; 
                 let currentTitle = null;
                 let currentGroup = "متفرقات"; 
-
                 for (const line of lines) {
                     if (line.startsWith('#EXTINF:')) {
                         const groupMatch = line.match(/group-title="([^"]+)"/);
                         currentGroup = (groupMatch && groupMatch[1]) ? groupMatch[1].trim() : "متفرقات";
-
                         const nameMatch = line.match(/tvg-name="([^"]+)"/);
                         currentTitle = (nameMatch && nameMatch[1]) ? nameMatch[1].trim() : line.split(',').pop().trim();
-
                         if (!categories[currentGroup]) {
                             categories[currentGroup] = [];
                         }
@@ -149,12 +230,8 @@
                     }
                 }
                 return categories;
-            } catch (error) {
-                console.error('خطأ في تحليل النص:', error);
-                return { "خطأ": [] }; 
-            }
+            } catch (error) { return { "خطأ": [] }; }
         }
-
         function filterChannels() {
             const input = document.getElementById('search-bar');
             const filter = input.value.toUpperCase(); 
@@ -166,22 +243,18 @@
                 else li[i].style.display = "none";
             }
         }
-
         function displayChannels(categoryName, clickedElement) {
             const channelList = document.getElementById('channel-list');
             const channels = categoriesData[categoryName] || [];
             channelList.innerHTML = ''; 
             document.getElementById('channel-list-title').innerText = categoryName;
-
             if (activeCategoryElement) activeCategoryElement.classList.remove('active');
             clickedElement.classList.add('active');
             activeCategoryElement = clickedElement;
-
             if (activeChannelElement) {
                 activeChannelElement.classList.remove('active');
                 activeChannelElement = null;
             }
-
             if (channels.length > 0) {
                 channels.forEach(channel => {
                     const li = document.createElement('li');
@@ -193,31 +266,23 @@
                 channelList.innerHTML = '<li class="loading">لا توجد قنوات في هذا التصنيف.</li>';
             }
         }
-        
         function renderCategories(categories) {
             const categoryList = document.getElementById('category-list');
             const categoryNames = Object.keys(categories);
-
             if (categoryNames.length > 0 && categoryNames[0] !== "خطأ") {
                 categoryList.innerHTML = ''; 
-                
-                // (جديد) برمجة خاصة لجعل "beIN" أولاً
                 const sortedCategories = categoryNames.sort((a, b) => {
                     if (a.toLowerCase().includes('bein')) return -1;
                     if (b.toLowerCase().includes('bein')) return 1;
                     return 0;
                 });
-                // --- نهاية كود الترتيب ---
-
                 sortedCategories.forEach(name => {
                     const li = document.createElement('li');
                     li.innerText = name;
                     li.onclick = () => displayChannels(name, li);
                     categoryList.appendChild(li);
                 });
-                
                 if(categoryList.firstChild){
-                    // عرض أول تصنيف (الذي أصبح beIN)
                     displayChannels(sortedCategories[0], categoryList.firstChild);
                     categoryList.firstChild.classList.add('active'); 
                     activeCategoryElement = categoryList.firstChild;
@@ -231,31 +296,36 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const categoryList = document.getElementById('category-list');
             const channelList = document.getElementById('channel-list');
-            const savedUrl = localStorage.getItem('xtream_url'); 
             
-            if (savedUrl) m3uInput.value = savedUrl;
+            const savedHost = localStorage.getItem('xtream_host');
+            const savedUser = localStorage.getItem('xtream_user');
+            const savedPass = localStorage.getItem('xtream_pass');
+            
+            if (savedHost) hostInput.value = savedHost;
+            if (savedUser) userInput.value = savedUser;
+            if (savedPass) passInput.value = savedPass;
+
+            // (جديد) تحميل الأكواد المجانية في الخلفية
+            loadFreeCodes();
 
             try {
                 let m3uText;
-                if (savedUrl) {
-                    console.log("جاري التحميل من الرابط المحفوظ:", savedUrl);
-                    const response = await fetch(`${CORS_PROXY}${encodeURIComponent(savedUrl)}`);
+                if (savedHost && savedUser && savedPass) {
+                    let fullUrl = `${savedHost}/get.php?username=${savedUser}&password=${savedPass}&type=m3u_plus&output=ts`;
+                    const response = await fetch(`${CORS_PROXY}${encodeURIComponent(fullUrl)}`);
                     if (!response.ok) throw new Error('فشل جلب الرابط من البروكسي');
                     m3uText = await response.text();
                 } else {
-                    console.log("جاري التحميل من الملف المحلي: channels.m3u");
                     const response = await fetch('channels.m3u');
                     if (!response.ok) throw new Error('فشل تحميل الملف المحلي channels.m3u');
                     m3uText = await response.text();
                 }
-
                 categoriesData = await parseM3U(m3uText);
                 renderCategories(categoriesData);
-
             } catch (error) {
                 console.error(error);
                 categoryList.innerHTML = `<li class="loading error">${error.message}</li>`;
-                channelList.innerHTML = `<li class="loading error">يرجى التحقق من الرابط في الإعدادات أو الملف المحلي.</li>`;
+                channelList.innerHTML = `<li class="loading error">يرجى التحقق من بيانات الخادم في الإعدادات أو الملف المحلي.</li>`;
             }
         });
     </script>
